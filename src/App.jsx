@@ -1,35 +1,41 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import Country from './components/Country';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [countries, setCountries] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCountries = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/countries');
+        if (!response.ok) {
+          throw new Error('Tīkla kļūda: ' + response.status);
+        }
+        const data = await response.json();
+        setCountries(data);
+      } catch (error) {
+        console.error('Neizdevās iegūt datus:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCountries();
+  }, []);
+
+  if (loading) return <p>Notiek ielāde...</p>;
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div style={{ padding: '2rem', fontFamily: 'Arial, sans-serif' }}>
+      <h1>Valstu saraksts</h1>
+      <ul style={{ listStyleType: 'circle' }}>
+        {countries.map(country => (
+          <Country key={country.id} {...country} />
+        ))}
+      </ul>
+    </div>
+  );
 }
 
-export default App
+export default App;
